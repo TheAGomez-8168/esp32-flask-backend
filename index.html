@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Monitor ESP32</title>
+</head>
+<body>
+  <h1>Valor del sensor: <span id="valor">Cargando...</span></h1>
+  <button onclick="setComando(true)">Encender LED</button>
+  <button onclick="setComando(false)">Apagar LED</button>
+
+  <script>
+    const api = 'https://esp32-backend.onrender.com/api';
+
+    setInterval(() => {
+      fetch(`${api}/datos`)
+        .then(r => r.json())
+        .then(d => {
+          document.getElementById('valor').innerText = d.sensor || 'N/A';
+        });
+    }, 3000);
+
+    function setComando(state) {
+      fetch(`${api}/comando`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({led: state})
+      });
+    }
+  </script>
+</body>
+</html>
