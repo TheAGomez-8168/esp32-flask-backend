@@ -1,73 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Control de Variables</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Control ESP32</title>
 </head>
 <body>
-  <h1>Monitor y Control</h1>
-  <div>
-    <p><strong>Temperatura actual:</strong> <span id="temperatura">--</span> °C</p>
-    <p><strong>pH actual:</strong> <span id="ph">--</span></p>
-  </div>
+    <h1>Control y Monitoreo ESP32</h1>
 
-  <div>
-    <label>Temperatura Set:</label>
-    <input type="number" id="temperaturaSet" step="0.1"><br>
+    <div>
+        <label>Temperatura (lectura): <span id="temperatura">--</span> °C</label><br/>
+        <label>pH (lectura): <span id="ph">--</span></label>
+    </div>
 
-    <label>pH Set:</label>
-    <input type="number" id="phSet" step="0.1"><br>
+    <hr/>
 
-    <label>Tiempo Dispensado (tDis):</label>
-    <input type="number" id="tDis"><br>
+    <div>
+        <label>Temperatura Set:
+            <input type="number" step="0.1" id="temperaturaSet" />
+        </label><br/>
+        <label>pH Set:
+            <input type="number" step="0.1" id="phSet" />
+        </label><br/>
+        <label>tDis:
+            <input type="number" id="tDis" />
+        </label><br/>
+        <label>vDis:
+            <input type="number" id="vDis" />
+        </label><br/>
+    </div>
 
-    <label>Volumen Dispensado (vDis):</label>
-    <input type="number" id="vDis"><br>
+    <button id="btnDispensar">Dispensar</button>
 
-    <button onclick="enviarDatos()">Actualizar</button>
-    <button onclick="dispensar()">Dispensar</button>
-  </div>
-
-  <script>
-    async function cargarDatos() {
-      const res = await fetch("/api/dato");
-      const data = await res.json();
-      document.getElementById("temperatura").innerText = data.temperatura.toFixed(2);
-      document.getElementById("ph").innerText = data.ph.toFixed(2);
-      document.getElementById("temperaturaSet").value = data.temperaturaSet;
-      document.getElementById("phSet").value = data.phSet;
-      document.getElementById("tDis").value = data.tDis;
-      document.getElementById("vDis").value = data.vDis;
-    }
-
-    async function enviarDatos() {
-      const body = {
-        temperaturaSet: parseFloat(document.getElementById("temperaturaSet").value),
-        phSet: parseFloat(document.getElementById("phSet").value),
-        tDis: parseInt(document.getElementById("tDis").value),
-        vDis: parseInt(document.getElementById("vDis").value),
-        dispensar: false
-      };
-      await fetch("/api/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-    }
-
-    async function dispensar() {
-      const body = {
-        dispensar: true
-      };
-      await fetch("/api/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-    }
-
-    setInterval(cargarDatos, 3000);
-    window.onload = cargarDatos;
-  </script>
+    <script src="script.js"></script>
 </body>
 </html>
