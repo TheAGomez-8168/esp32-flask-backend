@@ -1,26 +1,47 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
-CORS(app)  # Esto permite que la web pueda hacer peticiones a este backend desde otro dominio
+CORS(app)
 
-# Variable global para guardar el dato recibido de la ESP32
-dato_esp32 = ""
+# Datos globales
+datos = {
+    "temperatura": 0.0,
+    "ph": 0.0,
+    "temperaturaSet": 25.0,
+    "phSet": 7.0,
+    "tDis": 0,
+    "vDis": 0,
+    "dispensar": False
+}
 
-@app.route('/api/dato', methods=['GET', 'POST'])
-def manejar_dato():
-    global dato_esp32
-    if request.method == 'POST':
-        # ESP32 envía dato aquí
-        dato_esp32 = request.json.get('dato', '')
-        return jsonify({'mensaje': 'Dato recibido', 'dato': dato_esp32})
-    else:
-        # Página web consulta el dato aquí
-        return jsonify({'dato': dato_esp32})
+@app.route("/")
+def home():
+    return render_template("index.html")
 
-import os  # al inicio del archivo, si no está ya
+@app.route("/api/dato", methods=["GET", "POST"])
+def api_dato():
+    global datos
+    if request.method == "POST":
+        data = request.get_json()
+        datos["temperatura"] = data.get("temperatura", datos["temperatura"])
+        datos["ph"] = data.get("ph", datos["ph"])
+        return jsonify(datos)
+    elif request.method == "GET":
+        return jsonify(datos)
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # toma el puerto de la variable PORT o usa 5000
-    app.run(host='0.0.0.0', port=port)
+@app.route("/api/update", methods=["POST"])
+def update():
+    global datos
+    data = request.get_json()
+    datos["temperaturaSet"] = data.get("temperaturaSet", datos["temperaturaSet"])
+    datos["phSet"] = data.get("phSet", datos["phSet"])
+    datos["tDis"] = data.get("tDis", datos["tDis"])
+    datos["vDis"] = data.get("vDis", datos["vDis"])
+    datos["dispensar"] = data.get("dispensar", False)
+    return jsonify({"status": "ok"})
 
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
