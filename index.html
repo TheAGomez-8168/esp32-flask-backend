@@ -1,31 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Monitor ESP32</title>
+  <title>ESP32 Web</title>
 </head>
 <body>
-  <h1>Valor del sensor: <span id="valor">Cargando...</span></h1>
-  <button onclick="setComando(true)">Encender LED</button>
-  <button onclick="setComando(false)">Apagar LED</button>
+  <h1>Comunicación con ESP32 vía backend</h1>
+
+  <div>
+    <label>Enviar dato:</label>
+    <input type="text" id="inputDato" />
+    <button onclick="enviarDato()">Enviar</button>
+  </div>
+
+  <div>
+    <h2>Dato recibido del ESP32:</h2>
+    <p id="datoRecibido">Cargando...</p>
+  </div>
 
   <script>
-    const api = 'https://esp32-backend.onrender.com/api';
+    const apiURL = 'https://esp32-flask-backend.onrender.com/api/dato';
 
-    setInterval(() => {
-      fetch(`${api}/datos`)
-        .then(r => r.json())
-        .then(d => {
-          document.getElementById('valor').innerText = d.sensor || 'N/A';
-        });
-    }, 3000);
+    async function enviarDato() {
+      const dato = document.getElementById('inputDato').value;
+      if (!dato) return alert("Escribe un dato");
 
-    function setComando(state) {
-      fetch(`${api}/comando`, {
+      const res = await fetch(apiURL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({led: state})
+        body: JSON.stringify({dato})
       });
+      if (res.ok) {
+        alert('Dato enviado');
+        document.getElementById('inputDato').value = '';
+        cargarDato();
+      }
     }
+
+    async function cargarDato() {
+      const res = await fetch(apiURL);
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('datoRecibido').textContent = data.dato || "(vacío)";
+      } else {
+        document.getElementById('datoRecibido').textContent = "Error al cargar dato";
+      }
+    }
+
+    cargarDato();
+    setInterval(cargarDato, 5000); // Actualiza cada 5 segundos
   </script>
 </body>
 </html>
